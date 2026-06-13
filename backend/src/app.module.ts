@@ -12,6 +12,7 @@ import { CoursesModule } from './modules/courses/courses.module';
 import { HomeworkModule } from './modules/homework/homework.module';
 import { MailModule } from './modules/mail/mail.module';
 import { NotesModule } from './modules/notes/notes.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 import { QuizzesModule } from './modules/quizzes/quizzes.module';
 import { SemestersModule } from './modules/semesters/semesters.module';
 import { TeachersModule } from './modules/teachers/teachers.module';
@@ -33,6 +34,7 @@ import { UsersModule } from './modules/users/users.module';
     QuizzesModule,
     HomeworkModule,
     AgendaModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [
