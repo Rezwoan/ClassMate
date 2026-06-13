@@ -1,0 +1,6 @@
+# pnpm 10+ build-script allowlist.
+# Prisma needs its postinstall to download/build the query engine binary.
+allowBuilds:
+  '@prisma/client': true
+  '@prisma/engines': true
+  prisma: true
