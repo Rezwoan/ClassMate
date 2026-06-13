@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+/* ClassMate design tokens — light, playful, neutral (see docs/UI_UX.md). */
+@theme {
+  --color-bg: #faf8f5;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f3f1ec;
+  --color-primary: #5b5bd6;
+  --color-primary-strong: #4a48c4;
+  --color-primary-soft: #ecebfb;
+  --color-accent: #ff8a5b;
+  --color-accent-soft: #ffe9df;
+  --color-success: #22c55e;
+  --color-success-soft: #dcfce7;
+  --color-warning: #f59e0b;
+  --color-warning-soft: #fef3c7;
+  --color-danger: #ef4444;
+  --color-danger-soft: #fee2e2;
+  --color-ink: #1f2430;
+  --color-muted: #6b7280;
+  --color-line: #ece9e3;
+
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, sans-serif;
+
+  --radius-card: 20px;
+  --radius-field: 14px;
+
+  --shadow-soft: 0 4px 20px rgba(31, 36, 48, 0.06);
+  --shadow-pop: 0 12px 32px rgba(31, 36, 48, 0.12);
+
+  --animate-fade-up: fade-up 0.28s ease both;
+  --animate-pop: pop 0.18s ease both;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+html {
+  height: 100%;
+}
+body {
+  min-height: 100%;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Reusable component classes layered on top of Tailwind utilities. */
+@layer components {
+  .card {
+    @apply bg-surface rounded-card border border-line p-4;
+    box-shadow: var(--shadow-soft);
+  }
+
+  /* Base + variant are both applied in markup (Tailwind v4 can't @apply a
+     custom class, so variants only carry color utilities). */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-field
+      px-4 py-2.5 text-sm font-semibold transition active:scale-[0.97]
+      disabled:opacity-50 disabled:pointer-events-none select-none;
+  }
+  .btn-primary {
+    @apply bg-primary text-white hover:bg-primary-strong;
+  }
+  .btn-soft {
+    @apply bg-primary-soft text-primary hover:brightness-95;
+  }
+  .btn-ghost {
+    @apply bg-transparent text-ink hover:bg-surface-muted;
+  }
+  .btn-danger {
+    @apply bg-danger-soft text-danger hover:brightness-95;
+  }
+
+  .field {
+    @apply w-full rounded-field border border-line bg-surface px-3.5 py-2.5
+      text-sm text-ink placeholder:text-muted/70 outline-none transition
+      focus:border-primary focus:ring-4 focus:ring-primary-soft;
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-semibold text-ink;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Hide scrollbars on horizontal strips while keeping scroll. */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
