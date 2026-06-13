@@ -145,7 +145,8 @@ Group=$USER_NAME
 WorkingDirectory=$APP_DIR/frontend
 Environment=NODE_ENV=production
 Environment=PORT=$FRONTEND_PORT
-ExecStart=/usr/bin/node node_modules/.bin/next start -p $FRONTEND_PORT
+# pnpm's .bin/next is a shell shim, so run Next's real bin via node.
+ExecStart=/usr/bin/node node_modules/next/dist/bin/next start -p $FRONTEND_PORT
 Restart=on-failure
 RestartSec=5s
 StandardOutput=append:$LOG_DIR/frontend.log
