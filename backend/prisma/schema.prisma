@@ -1,0 +1,256 @@
+// ClassMate data model — SQLite via Prisma.
+// Narrative version: ../../docs/DATA_MODEL.md  (keep in sync).
+// Note: SQLite has no native enums, so "enum-like" fields are String and
+// validated in DTOs. Allowed values are documented inline.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  passwordHash  String
+  fullName      String
+  instituteName String
+  studentId     String
+  department    String?
+  timezone      String   @default("UTC")
+  emailVerified Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  semesters          Semester[]
+  courses            Course[]
+  classSessions      ClassSession[]
+  teachers           Teacher[]
+  notes              Note[]
+  quizzes            Quiz[]
+  homework           Homework[]
+  otpTokens          OtpToken[]
+  refreshTokens      RefreshToken[]
+  pushSubscriptions  PushSubscription[]
+  notificationLogs   NotificationLog[]
+  notificationPref   NotificationPreference?
+}
+
+model Semester {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  startDate DateTime
+  endDate   DateTime
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courses Course[]
+
+  @@index([userId])
+}
+
+model Course {
+  id         String   @id @default(cuid())
+  userId     String
+  semesterId String
+  name       String
+  code       String?
+  color      String   @default("#A7C7FF")
+  credits    Float?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  semester      Semester       @relation(fields: [semesterId], references: [id], onDelete: Cascade)
+  classSessions ClassSession[]
+  teachers      Teacher[]
+  notes         Note[]
+  quizzes       Quiz[]
+  homework      Homework[]
+
+  @@index([userId])
+  @@index([semesterId])
+}
+
+/// A recurring weekly class slot for a course.
+model ClassSession {
+  id        String   @id @default(cuid())
+  userId    String
+  courseId  String
+  dayOfWeek Int // 0 = Sunday … 6 = Saturday
+  startTime String // "HH:mm" (24h, local to the user's timezone)
+  endTime   String // "HH:mm"
+  room      String?
+  label     String? // e.g. "Lecture", "Lab"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  notes  Note[]
+
+  @@index([userId])
+  @@index([courseId])
+}
+
+model Teacher {
+  id          String   @id @default(cuid())
+  userId      String
+  courseId    String
+  name        String
+  email       String?
+  phone       String?
+  officeRoom  String?
+  officeHours String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([courseId])
+}
+
+model Note {
+  id             String   @id @default(cuid())
+  userId         String
+  courseId       String
+  classSessionId String?
+  title          String
+  content        String   @default("")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course       Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  classSession ClassSession? @relation(fields: [classSessionId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([courseId])
+}
+
+model Quiz {
+  id                  String   @id @default(cuid())
+  userId              String
+  courseId            String
+  title               String
+  date                DateTime
+  topics              String?
+  // dedupe flags for the reminder scheduler
+  remindedWeekend     Boolean  @default(false)
+  remindedDayBefore   Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([courseId])
+  @@index([date])
+}
+
+model Homework {
+  id          String   @id @default(cuid())
+  userId      String
+  courseId    String
+  title       String
+  description String?
+  dueDate     DateTime
+  status      String   @default("pending") // pending | submitted | late
+  remindedDue Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([courseId])
+  @@index([dueDate])
+}
+
+model NotificationPreference {
+  id                         String   @id @default(cuid())
+  userId                     String   @unique
+  pushEnabled                Boolean  @default(false)
+  classReminderEnabled       Boolean  @default(true)
+  classReminderMinutesBefore Int      @default(30)
+  quizWeekendReminder        Boolean  @default(true)
+  quizDayBeforeReminder      Boolean  @default(true)
+  homeworkReminderEnabled    Boolean  @default(true)
+  homeworkReminderDaysBefore Int      @default(1)
+  emailForClasses            Boolean  @default(false)
+  emailForQuizzes            Boolean  @default(true)
+  emailForHomework           Boolean  @default(true)
+  emailForGeneral            Boolean  @default(false)
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model OtpToken {
+  id         String    @id @default(cuid())
+  userId     String
+  codeHash   String
+  purpose    String // EMAIL_VERIFY | LOGIN | PASSWORD_RESET
+  expiresAt  DateTime
+  consumedAt DateTime?
+  attempts   Int       @default(0)
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([purpose])
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// Guarantees each scheduled reminder is sent at most once per channel.
+model NotificationLog {
+  id      String   @id @default(cuid())
+  userId  String
+  type    String // CLASS | QUIZ_WEEKEND | QUIZ_DAY_BEFORE | HOMEWORK
+  refKey  String // e.g. "quiz:<id>" or "class:<id>:<yyyy-mm-dd>"
+  channel String // PUSH | EMAIL
+  sentAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type, refKey, channel])
+  @@index([userId])
+}
