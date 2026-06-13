@@ -148,3 +148,25 @@ create a migration.**
 2. If you touched the schema → migration + `docs/DATA_MODEL.md`.
 3. If you changed behavior/structure → update the relevant `docs/*.md` and this file.
 4. Commit with a clear conventional-commit message on a feature branch.
+
+## 10. Gotchas & deliberate decisions
+
+- **Prisma pinned to v6.** v7 dropped `url` in the schema and requires driver
+  adapters (`better-sqlite3`, a native build), impractical here. Stay on v6 unless
+  you migrate the adapter setup intentionally.
+- **pnpm build scripts.** pnpm 10 blocks postinstall scripts; the allowlist lives
+  in each package's `pnpm-workspace.yaml` (`allowBuilds`). A fresh `pnpm install`
+  works without manual approval because that file is committed.
+- **Backend tsconfig has no `incremental`.** Combined with Nest's `deleteOutDir`,
+  a stale `.tsbuildinfo` caused missing `dist` files. `tsconfig.build.json` sets an
+  explicit `rootDir: ./src` (required by TypeScript 6).
+- **SQLite path.** `DATABASE_URL=file:../database/classmate.db` is resolved relative
+  to `prisma/schema.prisma`, so the file lands in `backend/database/`.
+- **Tailwind v4.** `@apply` cannot reference another custom class. Component classes
+  carry only real utilities; the base `.btn` and a variant class are both applied in
+  markup. Custom theme keys (`--color-*`, `--radius-*`, `--shadow-*`) generate
+  `bg-*`/`rounded-*`/`shadow-*` utilities.
+- **Frontend lint.** The strict `react-hooks/set-state-in-effect` and
+  `react-hooks/purity` rules are disabled (we fetch in effects and read the clock in
+  render; we don't use the React Compiler).
+- **Web push on iOS** only works for a PWA installed to the home screen (iOS 16.4+).
