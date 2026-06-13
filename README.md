@@ -96,6 +96,12 @@ spacing, mobile-first. No dark theme by default. Rationale and tokens live in
 
 ---
 
+## 🚀 Deployment
+
+Live at **https://classmate.rezwoan.me**, hosted on a Raspberry Pi behind a
+Cloudflare Tunnel (nginx + systemd), with auto-deploy on every push to `main` via
+a self-hosted GitHub Actions runner. Full details in [`DEPLOYMENT.md`](DEPLOYMENT.md).
+
 ## 🤝 Contributing
 
 Read [`AGENTS.md`](AGENTS.md) before making changes — it documents conventions,
