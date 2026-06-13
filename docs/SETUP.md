@@ -21,7 +21,7 @@ Fill in `backend/.env`:
 
 | Variable | How to get it |
 |----------|---------------|
-| `DATABASE_URL` | leave as `file:./database/classmate.db` |
+| `DATABASE_URL` | leave as `file:../database/classmate.db` (resolved relative to `prisma/schema.prisma`) |
 | `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` | any long random strings (`openssl rand -hex 32`) |
 | `RESEND_API_KEY` | from the [Resend dashboard](https://resend.com) |
 | `MAIL_FROM` | a verified sender, e.g. `ClassMate <noreply@yourdomain.com>` |

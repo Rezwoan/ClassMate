@@ -13,15 +13,15 @@ ClassMate is a **Progressive Web App** built with a **Next.js** frontend and a
 
 | # | Feature | Status |
 |---|---------|--------|
-| 1 | **Calendar home** — week view of all classes, today highlighted, next class surfaced | 🚧 |
-| 2 | **Onboarding** — set semester name, start date and end date | 🚧 |
-| 3 | **Settings** — enable notifications + send a test notification | 🚧 |
-| 4 | **Notes** — add & manage notes per class of each course | 🚧 |
-| 5 | **Quizzes** — date + topics/syllabus per quiz | 🚧 |
-| 6 | **Teachers** — email & phone per class/course | 🚧 |
-| 7 | **Reminders** — pre-class push (class no. + course), weekend + day-before quiz study reminders | 🚧 |
-| 8 | **Homework / assignments** — with submission-date reminders | 🚧 |
-| 9 | **Auth** — full name / institute / student ID signup + login, **email OTP** via Resend | 🚧 |
+| 1 | **Calendar home** — week view of all classes, today highlighted, next class surfaced | ✅ |
+| 2 | **Onboarding** — set semester name, start date and end date | ✅ |
+| 3 | **Settings** — enable notifications + send a test notification | ✅ |
+| 4 | **Notes** — add & manage notes per class of each course | ✅ |
+| 5 | **Quizzes** — date + topics/syllabus per quiz | ✅ |
+| 6 | **Teachers** — email & phone per class/course | ✅ |
+| 7 | **Reminders** — pre-class push (class no. + course), weekend + day-before quiz study reminders | ✅ |
+| 8 | **Homework / assignments** — with submission-date reminders | ✅ |
+| 9 | **Auth** — full name / institute / student ID signup + login, **email OTP** via Resend | ✅ |
 
 **Extras we add:** attendance tracking, grade/CGPA tracker, a "today" focus card,
 exportable timetable, and per-category email-notification toggles so you only spend
@@ -78,7 +78,7 @@ pnpm dev                      # web on http://localhost:3000
 
 | Variable | Purpose |
 |----------|---------|
-| `DATABASE_URL` | `file:./database/classmate.db` |
+| `DATABASE_URL` | `file:../database/classmate.db` |
 | `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` | token signing |
 | `RESEND_API_KEY` | email + OTP delivery |
 | `MAIL_FROM` | verified sender address |
