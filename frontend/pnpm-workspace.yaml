@@ -1,0 +1,5 @@
+# pnpm 10+ build-script allowlist.
+# sharp → Next.js image optimization; unrs-resolver → eslint resolver.
+allowBuilds:
+  sharp: true
+  unrs-resolver: true
