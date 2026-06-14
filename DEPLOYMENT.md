@@ -85,6 +85,13 @@ After this, every push to `main` runs `.github/workflows/deploy.yml` →
 | `RESEND_API_KEY` | Resend key (passed at setup) |
 | `MAIL_FROM` | `ClassMate <noreply@rezwoan.me>` (verified domain) |
 | `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | auto-generated on the Pi |
+| `ADMIN_EMAIL` *(optional)* | admin account, default `frezwoan+admin@gmail.com` |
+| `ADMIN_PASSWORD` *(optional)* | initial admin password; if unset a random one is used and you set yours via **Forgot password** |
+
+> **Admin account:** on first boot the backend auto-creates the admin user
+> (verified). Since no `ADMIN_PASSWORD` is set in prod, use **Forgot password**
+> with `frezwoan+admin@gmail.com` — the reset code is emailed to `frezwoan@gmail.com`
+> (the `+admin` alias) — then log in; admins land on `/admin`.
 
 ### Frontend — `/var/www/classmate/frontend/.env.local`
 | Variable | Value |

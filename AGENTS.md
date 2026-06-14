@@ -76,6 +76,13 @@ Run these from the relevant package directory.
   `ValidationPipe`, `whitelist: true`).
 - **Auth:** JWT access token (short-lived) + refresh token. Protected routes use
   `JwtAuthGuard`. Current user injected via a `@CurrentUser()` decorator.
+- **Admin:** `User.isAdmin` gates the admin panel. `/admin/*` API routes are
+  guarded by `AdminGuard` (runs after the global `JwtAuthGuard`). An idempotent
+  `AdminSeeder` (`OnApplicationBootstrap`) ensures an admin account exists
+  (`ADMIN_EMAIL`, default `frezwoan+admin@gmail.com`) — created verified with a
+  throwaway password the operator resets via "forgot password"; in non-prod a dev
+  password is logged. Frontend admin pages live under `/admin` (own `AdminShell`,
+  no semester requirement) and are shown only to `isAdmin` users.
 - **Ownership:** every domain row is scoped to a `userId`. Services must filter by
   the authenticated user — never return another user's data.
 - **Errors:** throw Nest `HttpException` subclasses; a global filter shapes the JSON.

@@ -28,7 +28,7 @@ export default function LoginPage() {
         auth: false,
       });
       setSession(res);
-      const next = getQueryParam("next") || "/";
+      const next = getQueryParam("next") || (res.user.isAdmin ? "/admin" : "/");
       router.replace(next);
     } catch (err) {
       if (err instanceof ApiError && err.status === 403) {

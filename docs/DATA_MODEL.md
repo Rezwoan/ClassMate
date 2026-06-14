@@ -36,6 +36,7 @@ User 1───* Semester 1───* Course 1───* ClassSession
 | studentId | String | institutional ID |
 | department | String? | optional |
 | emailVerified | Boolean | set true after OTP |
+| isAdmin | Boolean | grants admin-panel access (default false) |
 | timezone | String | IANA tz, default `UTC` |
 | createdAt / updatedAt | DateTime | |
 
