@@ -15,6 +15,7 @@ User 1───* Semester 1───* Course 1───* ClassSession
   │                          │  1───* Quiz
   │                          │  1───* Homework
   │                          └──1───* Note  *───0..1 ClassSession
+  │                                     └──1───* NoteImage
   ├──1───1 NotificationPreference
   ├──1───* PushSubscription
   ├──1───* OtpToken
@@ -99,9 +100,29 @@ Nth occurrence of that session since the semester start date.
 | Field | Type | Notes |
 |-------|------|-------|
 | id, userId, courseId | String | |
-| classSessionId | String? | optional link to a specific class |
-| title | String | |
+| classSessionId | String? | optional link to a specific class slot |
+| date | DateTime? | the specific class-occurrence day (UTC midnight) this note is for; set when added from the home screen for one day's class, null for general course notes |
+| title | String | optional (default `""`) so image-only notes are allowed |
 | content | String | markdown |
+
+A note can be text, images, or both. Filtering by `classSessionId` + `date`
+returns the notes for one calendar day's class (used by the home-screen class
+sheet). `@@index([classSessionId, date])` backs that lookup.
+
+### NoteImage  (photo attached to a note)
+| Field | Type | Notes |
+|-------|------|-------|
+| id, userId, noteId | String | noteId → Note (cascade delete) |
+| data | Bytes | the image bytes, stored inline in SQLite |
+| mimeType | String | e.g. `image/jpeg` |
+| sizeBytes | Int | compressed size |
+| width, height | Int? | optional dimensions |
+
+Images live **in the database** (not on disk) so the single-file backup
+(`cp classmate.db`) includes them. Clients downscale/recompress photos before
+upload to keep the DB lean. Bytes are served only through the authenticated
+`GET /notes/images/:imageId` endpoint (ownership-scoped); list/detail responses
+return image **metadata only**, never the raw bytes.
 
 ### NotificationPreference  (1 per user)
 | Field | Type | Default |

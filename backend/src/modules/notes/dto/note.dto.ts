@@ -1,8 +1,8 @@
 import {
+  IsISO8601,
   IsOptional,
   IsString,
   MaxLength,
-  MinLength,
 } from 'class-validator';
 
 export class CreateNoteDto {
@@ -13,10 +13,16 @@ export class CreateNoteDto {
   @IsString()
   classSessionId?: string;
 
+  /** Specific class-occurrence date (ISO date or datetime); stored at UTC midnight. */
+  @IsOptional()
+  @IsISO8601()
+  date?: string;
+
+  // Optional so image-only notes can be saved without a title.
+  @IsOptional()
   @IsString()
-  @MinLength(1)
   @MaxLength(160)
-  title!: string;
+  title?: string;
 
   @IsOptional()
   @IsString()
@@ -30,8 +36,11 @@ export class UpdateNoteDto {
   classSessionId?: string | null;
 
   @IsOptional()
+  @IsISO8601()
+  date?: string | null;
+
+  @IsOptional()
   @IsString()
-  @MinLength(1)
   @MaxLength(160)
   title?: string;
 

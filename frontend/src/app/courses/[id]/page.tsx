@@ -15,10 +15,10 @@ import {
   Input,
   PageLoader,
   Select,
-  Textarea,
 } from "@/components/ui/primitives";
 import { ConfirmButton, Sheet } from "@/components/ui/sheet";
 import { useToast } from "@/components/ui/toast";
+import { NoteSheet, NoteThumbs, noteTitle } from "@/components/notes/NoteSheet";
 import {
   ClockIcon,
   MailIcon,
@@ -58,7 +58,7 @@ export default function CourseDetailPage() {
   type SheetKind =
     | null
     | { kind: "course" }
-    | { kind: "session" }
+    | { kind: "session"; editing?: ClassSession }
     | { kind: "teacher"; editing?: Teacher }
     | { kind: "note"; editing?: Note };
   const [sheet, setSheet] = useState<SheetKind>(null);
@@ -137,7 +137,10 @@ export default function CourseDetailPage() {
           {data.classSessions.map((s) => (
             <div key={s.id} className="flex items-center gap-3 rounded-field bg-surface p-3">
               <span className="w-1.5 self-stretch rounded-full" style={{ background: data.color }} />
-              <div className="flex-1">
+              <button
+                onClick={() => setSheet({ kind: "session", editing: s })}
+                className="flex-1 text-left"
+              >
                 <p className="font-semibold text-ink">
                   {WEEKDAYS_LONG[s.dayOfWeek]}
                   {s.label ? ` · ${s.label}` : ""}
@@ -153,7 +156,14 @@ export default function CourseDetailPage() {
                     </span>
                   )}
                 </div>
-              </div>
+              </button>
+              <button
+                onClick={() => setSheet({ kind: "session", editing: s })}
+                aria-label="Edit class"
+                className="text-muted hover:text-ink"
+              >
+                <PencilIcon className="size-4" />
+              </button>
               <button
                 onClick={() => deleteEntity(`/class-sessions/${s.id}`, course.reload)}
                 aria-label="Delete class"
@@ -237,13 +247,14 @@ export default function CourseDetailPage() {
               className="text-left"
             >
               <Card>
-                <p className="font-bold text-ink">{n.title}</p>
+                <p className="font-bold text-ink">{noteTitle(n)}</p>
                 <p className="text-xs text-muted">{formatDate(n.updatedAt)}</p>
                 {n.content && (
                   <p className="mt-2 line-clamp-3 whitespace-pre-wrap text-sm text-ink/80">
                     {n.content}
                   </p>
                 )}
+                <NoteThumbs images={n.images} />
               </Card>
             </button>
           ))}
@@ -268,6 +279,7 @@ export default function CourseDetailPage() {
       {sheet?.kind === "session" && (
         <SessionFormSheet
           courseId={id}
+          editing={sheet.editing}
           onClose={close}
           onSaved={() => {
             close();
@@ -287,7 +299,8 @@ export default function CourseDetailPage() {
         />
       )}
       {sheet?.kind === "note" && (
-        <NoteFormSheet
+        <NoteSheet
+          open
           courseId={id}
           sessions={data.classSessions}
           editing={sheet.editing}
@@ -429,40 +442,66 @@ function CourseFormSheet({
 
 function SessionFormSheet({
   courseId,
+  editing,
   onClose,
   onSaved,
 }: {
   courseId: string;
+  editing?: ClassSession;
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const { toast } = useToast();
   const { saving, run } = useSaver();
   const [form, setForm] = useState({
-    dayOfWeek: 1,
-    startTime: "08:00",
-    endTime: "09:30",
-    room: "",
-    label: "",
+    dayOfWeek: editing?.dayOfWeek ?? 1,
+    startTime: editing?.startTime ?? "08:00",
+    endTime: editing?.endTime ?? "09:30",
+    room: editing?.room ?? "",
+    label: editing?.label ?? "",
   });
+
+  async function del() {
+    if (!editing) return;
+    try {
+      await api(`/class-sessions/${editing.id}`, { method: "DELETE" });
+      toast("Class deleted", "info");
+      onSaved();
+    } catch {
+      toast("Could not delete", "error");
+    }
+  }
+
   return (
-    <Sheet open onClose={onClose} title="Add class">
+    <Sheet
+      open
+      onClose={onClose}
+      title={editing ? "Edit class" : "Add class"}
+      footer={
+        editing ? (
+          <div className="flex justify-end">
+            <ConfirmButton onConfirm={del}>Delete class</ConfirmButton>
+          </div>
+        ) : undefined
+      }
+    >
       <form
         onSubmit={(e) => {
           e.preventDefault();
+          const body = {
+            dayOfWeek: Number(form.dayOfWeek),
+            startTime: form.startTime,
+            endTime: form.endTime,
+            room: form.room || undefined,
+            label: form.label || undefined,
+          };
           run(
             () =>
-              api("/class-sessions", {
-                method: "POST",
-                body: {
-                  courseId,
-                  dayOfWeek: Number(form.dayOfWeek),
-                  startTime: form.startTime,
-                  endTime: form.endTime,
-                  room: form.room || undefined,
-                  label: form.label || undefined,
-                },
-              }).then(() => undefined),
-            "Class added",
+              (editing
+                ? api(`/class-sessions/${editing.id}`, { method: "PATCH", body })
+                : api("/class-sessions", { method: "POST", body: { ...body, courseId } })
+              ).then(() => undefined),
+            editing ? "Class updated" : "Class added",
           ).then(onSaved);
         }}
         className="space-y-4"
@@ -506,7 +545,7 @@ function SessionFormSheet({
           </Field>
         </div>
         <Button type="submit" loading={saving} className="w-full">
-          Add class
+          {editing ? "Save changes" : "Add class"}
         </Button>
       </form>
     </Sheet>
@@ -574,108 +613,6 @@ function TeacherFormSheet({
         </div>
         <Button type="submit" loading={saving} className="w-full">
           {editing ? "Save changes" : "Add teacher"}
-        </Button>
-      </form>
-    </Sheet>
-  );
-}
-
-function NoteFormSheet({
-  courseId,
-  sessions,
-  editing,
-  onClose,
-  onSaved,
-}: {
-  courseId: string;
-  sessions: ClassSession[];
-  editing?: Note;
-  onClose: () => void;
-  onSaved: () => void;
-}) {
-  const { toast } = useToast();
-  const { saving, run } = useSaver();
-  const [form, setForm] = useState({
-    title: editing?.title ?? "",
-    content: editing?.content ?? "",
-    classSessionId: editing?.classSessionId ?? "",
-  });
-
-  async function del() {
-    if (!editing) return;
-    try {
-      await api(`/notes/${editing.id}`, { method: "DELETE" });
-      toast("Note deleted", "info");
-      onSaved();
-    } catch {
-      toast("Could not delete", "error");
-    }
-  }
-
-  return (
-    <Sheet
-      open
-      onClose={onClose}
-      title={editing ? "Edit note" : "New note"}
-      footer={
-        editing ? (
-          <div className="flex justify-end">
-            <ConfirmButton onConfirm={del}>Delete note</ConfirmButton>
-          </div>
-        ) : undefined
-      }
-    >
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          const body = {
-            title: form.title,
-            content: form.content,
-            classSessionId: form.classSessionId || undefined,
-          };
-          run(
-            () =>
-              (editing
-                ? api(`/notes/${editing.id}`, {
-                    method: "PATCH",
-                    body: { title: form.title, content: form.content },
-                  })
-                : api("/notes", { method: "POST", body: { ...body, courseId } })
-              ).then(() => undefined),
-            editing ? "Note updated" : "Note saved",
-          ).then(onSaved);
-        }}
-        className="space-y-4"
-      >
-        <Field label="Title">
-          <Input required value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="Lecture 3 — recursion" />
-        </Field>
-        {!editing && sessions.length > 0 && (
-          <Field label="Link to a class (optional)">
-            <Select
-              value={form.classSessionId}
-              onChange={(e) => setForm((f) => ({ ...f, classSessionId: e.target.value }))}
-            >
-              <option value="">No specific class</option>
-              {sessions.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {WEEKDAYS_LONG[s.dayOfWeek]} {formatTime(s.startTime)}
-                  {s.label ? ` · ${s.label}` : ""}
-                </option>
-              ))}
-            </Select>
-          </Field>
-        )}
-        <Field label="Note">
-          <Textarea
-            className="min-h-40"
-            value={form.content}
-            onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
-            placeholder="Write your notes here…"
-          />
-        </Field>
-        <Button type="submit" loading={saving} className="w-full">
-          {editing ? "Save changes" : "Save note"}
         </Button>
       </form>
     </Sheet>
