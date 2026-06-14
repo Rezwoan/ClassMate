@@ -121,7 +121,8 @@ before dispatching.
 
 `User` → `Semester` → `Course` → `ClassSession` (recurring weekly slots).
 `Course` also has `Teacher`(s), `Quiz`(zes), `Homework`. `Note`s attach to a
-`Course` and optionally a specific `ClassSession`. `PushSubscription` and
+`Course` and optionally a specific `ClassSession` + occurrence `date`, and can
+carry `NoteImage`s (photos of hand-written notes). `PushSubscription` and
 `NotificationPreference` belong to `User`. `OtpToken` backs email verification.
 
 The authoritative schema is `backend/prisma/schema.prisma`; the narrative version is
@@ -170,3 +171,11 @@ create a migration.**
   `react-hooks/purity` rules are disabled (we fetch in effects and read the clock in
   render; we don't use the React Compiler).
 - **Web push on iOS** only works for a PWA installed to the home screen (iOS 16.4+).
+- **Note images live in the DB** as `Bytes` (matches the single-`.db`-file backup
+  story). They upload via multipart (`POST /notes/:id/images`, multer memory
+  storage — we type the file with a local `MulterFile` interface to avoid an
+  `@types/multer` dep) and are served only through the **authenticated**
+  `GET /notes/images/:imageId`. Because a plain `<img src>` can't send the bearer
+  token, the frontend fetches image bytes as a blob (`apiBlob`) and renders an
+  object URL (`AuthImage` component). Clients compress photos (`lib/image.ts`)
+  before upload. List/detail endpoints return image **metadata only**.

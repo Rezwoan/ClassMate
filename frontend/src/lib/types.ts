@@ -68,14 +68,25 @@ export interface Teacher {
   course?: CourseMini;
 }
 
+export interface NoteImageMeta {
+  id: string;
+  mimeType: string;
+  sizeBytes: number;
+  width: number | null;
+  height: number | null;
+  createdAt: string;
+}
+
 export interface Note {
   id: string;
   courseId: string;
   classSessionId: string | null;
+  date: string | null;
   title: string;
   content: string;
   updatedAt: string;
   course?: CourseMini;
+  images?: NoteImageMeta[];
 }
 
 export interface Quiz {

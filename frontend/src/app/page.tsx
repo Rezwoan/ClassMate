@@ -8,6 +8,7 @@ import type { AgendaResponse, AgendaSessionView } from "@/lib/types";
 import { cn, formatDate, formatTime, relativeDays, WEEKDAYS } from "@/lib/utils";
 import { AppShell } from "@/components/layout/AppShell";
 import { Card, EmptyState, PageLoader } from "@/components/ui/primitives";
+import { ClassDaySheet } from "@/components/notes/ClassDaySheet";
 import {
   BellIcon,
   ClipboardIcon,
@@ -22,9 +23,12 @@ function greeting(name?: string) {
   return name ? `${part}, ${name.split(" ")[0]}` : part;
 }
 
-function ClassRow({ s }: { s: AgendaSessionView }) {
+function ClassRow({ s, onClick }: { s: AgendaSessionView; onClick: () => void }) {
   return (
-    <div className="flex items-stretch gap-3 rounded-field bg-surface p-3">
+    <button
+      onClick={onClick}
+      className="flex w-full items-stretch gap-3 rounded-field bg-surface p-3 text-left transition active:scale-[0.99]"
+    >
       <span className="w-1.5 shrink-0 rounded-full" style={{ background: s.color }} />
       <div className="w-16 shrink-0">
         <p className="text-sm font-bold text-ink">{formatTime(s.startTime)}</p>
@@ -42,13 +46,17 @@ function ClassRow({ s }: { s: AgendaSessionView }) {
           )}
         </div>
       </div>
-    </div>
+    </button>
   );
 }
 
 function HomeContent() {
   const { data, loading, error } = useApi<AgendaResponse>("/agenda");
   const [selected, setSelected] = useState<string | null>(null);
+  const [openClass, setOpenClass] = useState<{
+    session: AgendaSessionView;
+    date: string;
+  } | null>(null);
 
   const selectedDay = useMemo(() => {
     if (!data) return null;
@@ -66,17 +74,24 @@ function HomeContent() {
     <div className="space-y-5">
       {/* Next class hero */}
       {next ? (
-        <Card className="border-0 bg-linear-to-br from-accent to-[#ff6f3c] text-white">
-          <div className="flex items-center gap-2 text-sm font-semibold opacity-90">
-            <ClockIcon className="size-4" /> Next class
-          </div>
-          <h2 className="mt-1 text-xl font-extrabold">{next.courseName}</h2>
-          <p className="mt-0.5 text-sm opacity-90">
-            {next.date ? relativeDays(next.date) : "Soon"} · {formatTime(next.startTime)}
-            {next.classNumber ? ` · Class ${next.classNumber}` : ""}
-            {next.room ? ` · ${next.room}` : ""}
-          </p>
-        </Card>
+        <button
+          onClick={() =>
+            next.date && setOpenClass({ session: next, date: next.date })
+          }
+          className="block w-full text-left"
+        >
+          <Card className="border-0 bg-linear-to-br from-accent to-[#ff6f3c] text-white">
+            <div className="flex items-center gap-2 text-sm font-semibold opacity-90">
+              <ClockIcon className="size-4" /> Next class
+            </div>
+            <h2 className="mt-1 text-xl font-extrabold">{next.courseName}</h2>
+            <p className="mt-0.5 text-sm opacity-90">
+              {next.date ? relativeDays(next.date) : "Soon"} · {formatTime(next.startTime)}
+              {next.classNumber ? ` · Class ${next.classNumber}` : ""}
+              {next.room ? ` · ${next.room}` : ""}
+            </p>
+          </Card>
+        </button>
       ) : (
         <Card className="bg-primary-soft text-primary">
           <p className="font-semibold">No upcoming classes 🎉</p>
@@ -136,7 +151,13 @@ function HomeContent() {
         {selectedDay && selectedDay.sessions.length > 0 ? (
           <Card className="space-y-2 p-2">
             {selectedDay.sessions.map((s) => (
-              <ClassRow key={s.id} s={s} />
+              <ClassRow
+                key={s.id}
+                s={s}
+                onClick={() =>
+                  setOpenClass({ session: s, date: selectedDay.date })
+                }
+              />
             ))}
           </Card>
         ) : (
@@ -187,6 +208,14 @@ function HomeContent() {
           </Card>
         </Link>
       </section>
+
+      {openClass && (
+        <ClassDaySheet
+          session={openClass.session}
+          date={openClass.date}
+          onClose={() => setOpenClass(null)}
+        />
+      )}
     </div>
   );
 }

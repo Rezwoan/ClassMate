@@ -103,3 +103,52 @@ export async function api<T = unknown>(
   }
   return data as T;
 }
+
+/** Multipart upload (FormData). Lets the browser set the multipart boundary. */
+export async function apiUpload<T = unknown>(
+  path: string,
+  formData: FormData,
+  opts: { retry?: boolean } = {},
+): Promise<T> {
+  const { retry = true } = opts;
+  const headers: Record<string, string> = {};
+  if (tokens.access) headers["Authorization"] = `Bearer ${tokens.access}`;
+
+  const res = await fetch(`${API_URL}/api${path}`, {
+    method: "POST",
+    headers,
+    body: formData,
+  });
+
+  if (res.status === 401 && retry) {
+    const ok = await tryRefresh();
+    if (ok) return apiUpload<T>(path, formData, { retry: false });
+    tokens.clear();
+  }
+
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : null;
+  if (!res.ok) throw new ApiError(res.status, extractMessage(data, res.status));
+  return data as T;
+}
+
+/** Fetches a protected binary resource (e.g. a note image) with auth. */
+export async function apiBlob(
+  path: string,
+  opts: { retry?: boolean } = {},
+): Promise<Blob> {
+  const { retry = true } = opts;
+  const headers: Record<string, string> = {};
+  if (tokens.access) headers["Authorization"] = `Bearer ${tokens.access}`;
+
+  const res = await fetch(`${API_URL}/api${path}`, { headers });
+
+  if (res.status === 401 && retry) {
+    const ok = await tryRefresh();
+    if (ok) return apiBlob(path, { retry: false });
+    tokens.clear();
+  }
+
+  if (!res.ok) throw new ApiError(res.status, `Request failed (${res.status})`);
+  return res.blob();
+}

@@ -30,6 +30,7 @@ model User {
   classSessions      ClassSession[]
   teachers           Teacher[]
   notes              Note[]
+  noteImages         NoteImage[]
   quizzes            Quiz[]
   homework           Homework[]
   otpTokens          OtpToken[]
@@ -119,21 +120,48 @@ model Teacher {
 }
 
 model Note {
-  id             String   @id @default(cuid())
+  id             String    @id @default(cuid())
   userId         String
   courseId       String
   classSessionId String?
-  title          String
-  content        String   @default("")
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  /// The specific class-occurrence date this note belongs to (UTC midnight).
+  /// Set when a note is attached to one day's class from the home screen;
+  /// null for general, non-date-specific course notes.
+  date           DateTime?
+  title          String    @default("")
+  content        String    @default("")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   course       Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
   classSession ClassSession? @relation(fields: [classSessionId], references: [id], onDelete: SetNull)
+  images       NoteImage[]
 
   @@index([userId])
   @@index([courseId])
+  @@index([classSessionId, date])
+}
+
+/// A photo/image attached to a Note (e.g. a snapshot of hand-written class
+/// notes). Bytes live in the SQLite file so the single-file backup includes
+/// them; clients compress before upload to keep the database lean.
+model NoteImage {
+  id        String   @id @default(cuid())
+  userId    String
+  noteId    String
+  data      Bytes
+  mimeType  String
+  sizeBytes Int
+  width     Int?
+  height    Int?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  note Note @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([noteId])
 }
 
 model Quiz {
