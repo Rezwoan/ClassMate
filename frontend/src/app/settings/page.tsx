@@ -23,7 +23,8 @@ import {
   Switch,
 } from "@/components/ui/primitives";
 import { useToast } from "@/components/ui/toast";
-import { BellIcon, LogOutIcon } from "@/components/ui/icons";
+import { BellIcon, ChevronRightIcon, LogOutIcon, ShieldIcon } from "@/components/ui/icons";
+import Link from "next/link";
 
 function Row({
   title,
@@ -170,6 +171,21 @@ export default function SettingsPage() {
         <PageLoader />
       ) : (
         <div>
+          {user?.isAdmin && (
+            <Link href="/admin" className="mt-2 block">
+              <Card className="flex items-center gap-3 border border-primary/30 bg-primary-soft">
+                <span className="grid size-10 place-items-center rounded-full bg-primary text-white">
+                  <ShieldIcon className="size-5" />
+                </span>
+                <div className="flex-1">
+                  <p className="font-bold text-ink">Admin panel</p>
+                  <p className="text-xs text-muted">Users, stats & system overview</p>
+                </div>
+                <ChevronRightIcon className="size-5 text-primary" />
+              </Card>
+            </Link>
+          )}
+
           {/* Notifications */}
           <SectionTitle>Notifications</SectionTitle>
           <Card>

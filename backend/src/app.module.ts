@@ -5,6 +5,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { PrismaModule } from './prisma/prisma.module';
+import { AdminModule } from './modules/admin/admin.module';
 import { AgendaModule } from './modules/agenda/agenda.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ClassSessionsModule } from './modules/class-sessions/class-sessions.module';
@@ -35,6 +36,7 @@ import { UsersModule } from './modules/users/users.module';
     HomeworkModule,
     AgendaModule,
     NotificationsModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [

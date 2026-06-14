@@ -147,3 +147,34 @@ export const ImageIcon = (p: IconProps) => (
     <path d="m21 16-5-5L5 20" />
   </Svg>
 );
+export const ShieldIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 3 5 6v6c0 4 3 6.5 7 8 4-1.5 7-4 7-8V6l-7-3z" />
+    <path d="m9 12 2 2 4-4" />
+  </Svg>
+);
+export const UsersIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="9" cy="8" r="3.5" />
+    <path d="M2.5 20a6.5 6.5 0 0 1 13 0" />
+    <path d="M16 5.5a3.5 3.5 0 0 1 0 6.8M17.5 20a6.5 6.5 0 0 0-2-4.6" />
+  </Svg>
+);
+export const ChartIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M3 3v18h18" />
+    <rect x="7" y="11" width="3" height="6" />
+    <rect x="13" y="7" width="3" height="10" />
+  </Svg>
+);
+export const SearchIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="11" cy="11" r="7" />
+    <path d="m20 20-3.2-3.2" />
+  </Svg>
+);
+export const ChevronLeftIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="m15 18-6-6 6-6" />
+  </Svg>
+);

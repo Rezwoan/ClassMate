@@ -7,6 +7,7 @@ export interface User {
   department: string | null;
   timezone: string;
   emailVerified: boolean;
+  isAdmin: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -154,4 +155,82 @@ export interface AgendaResponse {
   nextClass: AgendaSessionView | null;
   upcomingQuizzes: Quiz[];
   dueHomework: Homework[];
+}
+
+// ---------- Admin ----------
+
+export interface AdminStats {
+  users: { total: number; verified: number; admins: number; newLast7Days: number };
+  content: {
+    semesters: number;
+    courses: number;
+    classSessions: number;
+    teachers: number;
+    notes: number;
+    noteImages: number;
+    quizzes: number;
+    homework: number;
+  };
+  storage: { imageBytes: number };
+  push: { subscriptions: number };
+  recentUsers: Array<{
+    id: string;
+    email: string;
+    fullName: string;
+    emailVerified: boolean;
+    isAdmin: boolean;
+    createdAt: string;
+  }>;
+}
+
+export interface AdminUserListItem {
+  id: string;
+  email: string;
+  fullName: string;
+  instituteName: string;
+  studentId: string;
+  emailVerified: boolean;
+  isAdmin: boolean;
+  createdAt: string;
+  _count: { courses: number; notes: number; quizzes: number; homework: number };
+}
+
+export interface AdminUserList {
+  items: AdminUserListItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface AdminUserDetail {
+  id: string;
+  email: string;
+  fullName: string;
+  instituteName: string;
+  studentId: string;
+  department: string | null;
+  timezone: string;
+  emailVerified: boolean;
+  isAdmin: boolean;
+  createdAt: string;
+  updatedAt: string;
+  _count: {
+    semesters: number;
+    courses: number;
+    classSessions: number;
+    teachers: number;
+    notes: number;
+    quizzes: number;
+    homework: number;
+    pushSubscriptions: number;
+  };
+  semesters: Array<{
+    id: string;
+    name: string;
+    startDate: string;
+    endDate: string;
+    isActive: boolean;
+    _count: { courses: number };
+  }>;
+  courses: Array<{ id: string; name: string; code: string | null; color: string }>;
 }
