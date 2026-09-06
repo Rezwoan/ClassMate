@@ -7,6 +7,10 @@
 ClassMate is a **Progressive Web App** built with a **Next.js** frontend and a
 **NestJS** backend, using a **direct SQLite (`.db`) database** via **Prisma**.
 
+## 📱 Preview
+
+![ClassMate home screen](https://github.com/user-attachments/assets/77fa7a3b-2a45-43e2-a342-99a1a82e4b3c)
+
 ---
 
 ## ✨ Features
